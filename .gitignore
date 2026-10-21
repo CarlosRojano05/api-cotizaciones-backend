@@ -1,0 +1,17 @@
+# Entorno virtual
+venv/
+.venv/
+
+# Caché de Python
+__pycache__/
+*.pyc
+
+# Variables de entorno secretas
+.env
+
+# Archivos subidos por los clientes (logos, PDFs generados)
+uploads/
+
+# Editor
+.vscode/
+.idea/
