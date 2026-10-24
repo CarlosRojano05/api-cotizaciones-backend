@@ -8,6 +8,7 @@ facilita las pruebas automáticas y el despliegue en producción.
 Para arrancar en desarrollo:   python app.py
 """
 import logging
+from datetime import date, datetime
 from decimal import Decimal
 
 import mysql.connector
@@ -21,16 +22,33 @@ from config.settings import Settings
 from controllers.auth_controller import auth_bp, usuario_bp
 from controllers.cliente_controller import cliente_bp
 from controllers.cotizacion_controller import cotizacion_bp
+from controllers.dashboard_controller import dashboard_bp
+from controllers.empresa_controller import empresa_bp
 from controllers.item_controller import item_bp
 
 
+# Mensajes en español para los errores HTTP más comunes
+MENSAJES_HTTP = {
+    404: "El recurso solicitado no existe",
+    405: "Método no permitido para esta ruta",
+    413: "El archivo o la petición es demasiado grande",
+    415: "Tipo de contenido no soportado",
+}
+
+
 class ProveedorJSON(DefaultJSONProvider):
-    """Convierte Decimal a número en el JSON de salida (se calcula en Decimal, se muestra como número)."""
+    """
+    Cómo se convierten ciertos tipos a JSON:
+      - Decimal -> número (se calcula en Decimal, se muestra como número)
+      - fechas  -> texto estándar ISO: "2026-11-30" o "2026-11-30T18:04:48"
+    """
 
     @staticmethod
     def default(o):
         if isinstance(o, Decimal):
             return float(o)
+        if isinstance(o, (date, datetime)):
+            return o.isoformat()
         return DefaultJSONProvider.default(o)
 
 
@@ -58,7 +76,7 @@ def create_app():
         return jsonify({"error": "Tu sesión expiró. Inicia sesión nuevamente"}), 401
 
     # ---------- Registro de blueprints ----------
-    for blueprint in (auth_bp, usuario_bp, cliente_bp, item_bp, cotizacion_bp):
+    for blueprint in (auth_bp, usuario_bp, empresa_bp, cliente_bp, item_bp, cotizacion_bp, dashboard_bp):
         app.register_blueprint(blueprint)
 
     @app.route("/salud", methods=["GET"])
@@ -69,7 +87,8 @@ def create_app():
     # ---------- Manejo global de errores: la API SIEMPRE responde JSON ----------
     @app.errorhandler(HTTPException)
     def _error_http(e):
-        return jsonify({"error": e.description}), e.code
+        mensaje = MENSAJES_HTTP.get(e.code, e.description)
+        return jsonify({"error": mensaje}), e.code
 
     @app.errorhandler(mysql.connector.errors.DataError)
     def _dato_invalido(e):

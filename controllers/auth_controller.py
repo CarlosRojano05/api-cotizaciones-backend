@@ -38,6 +38,16 @@ def mi_perfil():
     return jsonify(respuesta), status
 
 
+@auth_bp.route("/auth/password", methods=["PUT"])
+@login_requerido
+def cambiar_password():
+    datos = leer_json()
+    if datos is None:
+        return jsonify(ERROR_JSON), 400
+    respuesta, status = auth_service.cambiar_password(g.empresa_id, g.usuario_id, datos)
+    return jsonify(respuesta), status
+
+
 # ---------- Gestión de usuarios (solo admin) ----------
 @usuario_bp.route("/usuarios", methods=["GET"])
 @rol_requerido("admin")
@@ -59,4 +69,14 @@ def crear_usuario():
 @rol_requerido("admin")
 def desactivar_usuario(id):
     respuesta, status = usuario_service.desactivar_usuario(g.empresa_id, g.usuario_id, id)
+    return jsonify(respuesta), status
+
+
+@usuario_bp.route("/usuarios/<int:id>/password", methods=["PUT"])
+@rol_requerido("admin")
+def restablecer_password(id):
+    datos = leer_json()
+    if datos is None:
+        return jsonify(ERROR_JSON), 400
+    respuesta, status = usuario_service.restablecer_password(g.empresa_id, id, datos)
     return jsonify(respuesta), status

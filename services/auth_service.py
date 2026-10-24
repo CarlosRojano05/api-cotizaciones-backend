@@ -11,13 +11,24 @@ ROLES_VALIDOS = ("admin", "vendedor")
 LARGO_MINIMO_PASSWORD = 8
 
 
+def _validar_password(password):
+    """Devuelve un mensaje de error, o None si la contraseña es aceptable."""
+    if len(password) < LARGO_MINIMO_PASSWORD:
+        return f"La contraseña debe tener al menos {LARGO_MINIMO_PASSWORD} caracteres"
+    if len(password) > 128:
+        return "La contraseña no puede superar 128 caracteres"
+    return None
+
+
 def _validar_email_y_password(email, password):
     """Devuelve un mensaje de error, o None si todo está bien."""
     if "@" not in email or "." not in email.split("@")[-1] or len(email) > 100:
         return "El correo electrónico no es válido"
-    if len(password) < LARGO_MINIMO_PASSWORD:
-        return f"La contraseña debe tener al menos {LARGO_MINIMO_PASSWORD} caracteres"
-    return None
+    return _validar_password(password)
+
+
+def _como_texto(valor):
+    return valor if isinstance(valor, str) else ""
 
 
 class AuthService:
@@ -97,6 +108,26 @@ class AuthService:
         return usuario, 200
 
 
+    def cambiar_password(self, empresa_id, usuario_id, datos):
+        """El propio usuario cambia su contraseña (debe conocer la actual)."""
+        actual = _como_texto(datos.get("password_actual"))
+        nueva = _como_texto(datos.get("password_nueva"))
+        if not actual or not nueva:
+            return {"error": "password_actual y password_nueva son obligatorios"}, 400
+
+        error = _validar_password(nueva)
+        if error:
+            return {"error": error}, 400
+
+        hash_guardado = self.usuario.obtener_hash(empresa_id, usuario_id)
+        # 400 (y no 401) para que el frontend no confunda esto con "sesión vencida".
+        if not hash_guardado or not check_password_hash(hash_guardado, actual):
+            return {"error": "La contraseña actual es incorrecta"}, 400
+
+        self.usuario.actualizar_password(empresa_id, usuario_id, generate_password_hash(nueva))
+        return {"mensaje": "Contraseña actualizada exitosamente"}, 200
+
+
 class UsuarioService:
     """Gestión de usuarios de UNA empresa (solo la usa el admin)."""
 
@@ -138,3 +169,16 @@ class UsuarioService:
         if self.usuario.desactivar_usuario(empresa_id, usuario_id) == 0:
             return {"error": f"No se encontró el usuario activo con ID {usuario_id}"}, 404
         return {"mensaje": "Usuario desactivado exitosamente"}, 200
+
+    def restablecer_password(self, empresa_id, usuario_id, datos):
+        """El admin asigna una contraseña nueva a un usuario de su empresa (ej. se le olvidó)."""
+        nueva = _como_texto(datos.get("password_nueva"))
+        if not nueva:
+            return {"error": "password_nueva es obligatoria"}, 400
+        error = _validar_password(nueva)
+        if error:
+            return {"error": error}, 400
+
+        if self.usuario.actualizar_password(empresa_id, usuario_id, generate_password_hash(nueva)) == 0:
+            return {"error": f"No se encontró el usuario activo con ID {usuario_id}"}, 404
+        return {"mensaje": "Contraseña restablecida exitosamente"}, 200

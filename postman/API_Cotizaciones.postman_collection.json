@@ -1,0 +1,833 @@
+{
+  "info": {
+    "_postman_id": "6aeb6507-db0e-4dfd-ab7d-2ca0f758b776",
+    "name": "API Cotizaciones",
+    "description": "Colección completa del backend. 1) Selecciona el environment 'local'. 2) Ejecuta 'auth > registro' (o 'login'): guarda el token solo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "registro",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/registro",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "registro"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresa_nombre\": \"Ferretería El Tornillo S.A.S.\",\n  \"nit\": \"900123456-1\",\n  \"nombre\": \"Carlos Pérez\",\n  \"email\": \"carlos@eltornillo.com\",\n  \"password\": \"claveSegura1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) { pm.environment.set(\"token\", pm.response.json().token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"carlos@eltornillo.com\",\n  \"password\": \"claveSegura1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) { pm.environment.set(\"token\", pm.response.json().token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "mi perfil",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "cambiar mi contraseña",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "password"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password_actual\": \"claveSegura1\",\n  \"password_nueva\": \"claveNueva456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "empresa",
+      "item": [
+        {
+          "name": "ver configuración",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/empresa/configuracion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresa",
+                "configuracion"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "actualizar configuración",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/empresa/configuracion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresa",
+                "configuracion"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ferretería El Tornillo S.A.S.\",\n  \"nit\": \"900123456-1\",\n  \"direccion\": \"Calle 45 # 20-10, Barranquilla\",\n  \"telefono\": \"300 123 4567\",\n  \"email\": \"ventas@eltornillo.com\",\n  \"sitio_web\": \"www.eltornillo.com\",\n  \"color_primario\": \"#1F4E79\",\n  \"moneda\": \"COP\",\n  \"iva_defecto\": 19,\n  \"validez_dias\": 30,\n  \"prefijo\": \"FER\",\n  \"condiciones\": \"1. Precios sujetos a disponibilidad.\\n2. Pago: 50% anticipado y 50% contra entrega.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Todos los campos son opcionales: solo cambia los que envíes."
+          },
+          "response": []
+        },
+        {
+          "name": "subir logo",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/empresa/logo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresa",
+                "logo"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "logo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "description": "Body > form-data. En la fila 'logo' cambia el tipo a File y elige una imagen PNG, JPG o WEBP (máx. 2 MB)."
+          },
+          "response": []
+        },
+        {
+          "name": "ver logo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/empresa/logo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresa",
+                "logo"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "eliminar logo",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/empresa/logo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresa",
+                "logo"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "usuarios",
+      "item": [
+        {
+          "name": "listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Laura Vendedora\",\n  \"email\": \"laura@eltornillo.com\",\n  \"password\": \"otraClave123\",\n  \"rol\": \"vendedor\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) { pm.environment.set(\"usuario_id\", pm.response.json().id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "restablecer contraseña de un usuario",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/usuarios/{{usuario_id}}/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuario_id}}",
+                "password"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password_nueva\": \"claveTemporal789\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "desactivar usuario",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/usuarios/{{usuario_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuario_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "clientes",
+      "item": [
+        {
+          "name": "listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/clientes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clientes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ver uno",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/clientes/{{cliente_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clientes",
+                "{{cliente_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "crear",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/clientes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clientes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Constructora Andina S.A.S.\",\n  \"identificacion\": \"900555111-2\",\n  \"telefono\": \"3109876543\",\n  \"email\": \"compras@andina.com\",\n  \"direccion\": \"Carrera 50 # 80-15, Barranquilla\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) { pm.environment.set(\"cliente_id\", pm.response.json().id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "actualizar",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/clientes/{{cliente_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clientes",
+                "{{cliente_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Constructora Andina S.A.S.\",\n  \"identificacion\": \"900555111-2\",\n  \"telefono\": \"3109876543\",\n  \"email\": \"compras@andina.com\",\n  \"direccion\": \"Carrera 50 # 80-15, Barranquilla\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "desactivar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/clientes/{{cliente_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clientes",
+                "{{cliente_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "items",
+      "item": [
+        {
+          "name": "listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "items"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "crear",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "items"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Mano de Obra - Instalación Eléctrica\",\n  \"descripcion\": \"Instalación de puntos de red y revisión de tablero\",\n  \"precio_unitario\": 85000,\n  \"tipo\": \"servicio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) { pm.environment.set(\"item_id\", pm.response.json().id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "actualizar",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/items/{{item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "items",
+                "{{item_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Mano de Obra - Instalación Eléctrica\",\n  \"descripcion\": \"Instalación de puntos de red y revisión de tablero\",\n  \"precio_unitario\": 90000,\n  \"tipo\": \"servicio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "desactivar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/items/{{item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "items",
+                "{{item_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "cotizaciones",
+      "item": [
+        {
+          "name": "listar (con filtros)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cotizaciones?estado=Pendiente&cliente_id=1&vencidas=1&buscar=andina",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cotizaciones"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "Pendiente",
+                  "disabled": true
+                },
+                {
+                  "key": "cliente_id",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "vencidas",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "buscar",
+                  "value": "andina",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Los filtros están desactivados: marca la casilla del que quieras usar."
+          },
+          "response": []
+        },
+        {
+          "name": "crear",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cotizaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cotizaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cliente_id\": 1,\n  \"descuento\": 10000,\n  \"iva_porcentaje\": 19,\n  \"fecha_vencimiento\": \"2026-12-15\",\n  \"notas\": \"Entrega en 3 días hábiles\",\n  \"items\": [\n    {\n      \"item_id\": 1,\n      \"cantidad\": 2\n    },\n    {\n      \"item_id\": 2,\n      \"cantidad\": 1,\n      \"precio_unitario\": 120000\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Opcionales: descuento, iva_porcentaje (si no, usa el de la empresa), fecha_vencimiento (si no, hoy + días de validez), notas, precio_unitario por línea (si no, usa el del catálogo)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) { pm.environment.set(\"cotizacion_id\", pm.response.json().cotizacion_id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "ver detalle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cotizaciones/{{cotizacion_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cotizaciones",
+                "{{cotizacion_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "cambiar estado",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cotizaciones/{{cotizacion_id}}/estado",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cotizaciones",
+                "{{cotizacion_id}}",
+                "estado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"Aceptada\",\n  \"comentario\": \"Cliente confirmó por WhatsApp\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ver historial",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cotizaciones/{{cotizacion_id}}/historial",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cotizaciones",
+                "{{cotizacion_id}}",
+                "historial"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "descargar PDF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cotizaciones/{{cotizacion_id}}/pdf?descargar=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cotizaciones",
+                "{{cotizacion_id}}",
+                "pdf"
+              ],
+              "query": [
+                {
+                  "key": "descargar",
+                  "value": "1",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "anular",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cotizaciones/{{cotizacion_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cotizaciones",
+                "{{cotizacion_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "panel",
+      "item": [
+        {
+          "name": "dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "salud del servidor",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/salud",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "salud"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "response": []
+    }
+  ]
+}
