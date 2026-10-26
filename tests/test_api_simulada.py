@@ -191,7 +191,8 @@ svc2.empresa.actualizar_logo = lambda emp, path: logo_db.update(path=path) or 1
 ok(cli.get("/empresa/logo", headers=ADMIN).status_code == 404)
 r = cli.post("/empresa/logo", data={"logo": (png(), "mi logo.png")}, headers=ADMIN, content_type="multipart/form-data"); ok(r.status_code == 200, r.data)
 ruta = os.path.join(TMP, "logos", "empresa_1.png"); ok(os.path.isfile(ruta) and logo_db["path"] == "logos/empresa_1.png", logo_db)
-im = Image.open(ruta); ok(max(im.size) == 600 and im.size == (600, 200), im.size)       # se reduce a 600px respetando proporción
+with Image.open(ruta) as im:
+    ok(max(im.size) == 600 and im.size == (600, 200), im.size)       # se reduce a 600px respetando proporción
 r = cli.get("/empresa/logo", headers=VENDEDOR); ok(r.status_code == 200 and r.mimetype == "image/png" and r.data[:4] == b"\x89PNG")
 ok(cli.get("/empresa/configuracion", headers=ADMIN).get_json()["tiene_logo"] is True)
 r = cli.post("/empresa/logo", data={"logo": (jpg(), "foto.jpg")}, headers=ADMIN, content_type="multipart/form-data"); ok(r.status_code == 200)
