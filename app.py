@@ -1,16 +1,112 @@
-from flask import Flask
+"""
+Punto de entrada de la aplicación.
+
+Se usa el patrón "application factory" (create_app): en lugar de crear la app
+suelta, la construimos dentro de una función. Es la forma recomendada porque
+facilita las pruebas automáticas y el despliegue en producción.
+
+Para arrancar en desarrollo:   python app.py
+"""
+import logging
+from datetime import date, datetime
+from decimal import Decimal
+
+import mysql.connector
+from flask import Flask, jsonify
+from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
-from controllers.cliente_controllers import cliente_bp
-from controllers.item_controllers import item_bp
-from controllers.cotizacion_controllers import cotizacion_bp
+from flask_jwt_extended import JWTManager
+from werkzeug.exceptions import HTTPException
 
-app = Flask(__name__)
-CORS(app)
+from config.settings import Settings
+from controllers.auth_controller import auth_bp, usuario_bp
+from controllers.cliente_controller import cliente_bp
+from controllers.cotizacion_controller import cotizacion_bp
+from controllers.dashboard_controller import dashboard_bp
+from controllers.empresa_controller import empresa_bp
+from controllers.item_controller import item_bp
 
-# Se Registra el blueprint de los controllers
-app.register_blueprint(cliente_bp)
-app.register_blueprint(item_bp)
-app.register_blueprint(cotizacion_bp)
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+# Mensajes en español para los errores HTTP más comunes
+MENSAJES_HTTP = {
+    404: "El recurso solicitado no existe",
+    405: "Método no permitido para esta ruta",
+    413: "El archivo o la petición es demasiado grande",
+    415: "Tipo de contenido no soportado",
+}
+
+
+class ProveedorJSON(DefaultJSONProvider):
+    """
+    Cómo se convierten ciertos tipos a JSON:
+      - Decimal -> número (se calcula en Decimal, se muestra como número)
+      - fechas  -> texto estándar ISO: "2026-11-30" o "2026-11-30T18:04:48"
+    """
+
+    @staticmethod
+    def default(o):
+        if isinstance(o, Decimal):
+            return float(o)
+        if isinstance(o, (date, datetime)):
+            return o.isoformat()
+        return DefaultJSONProvider.default(o)
+
+
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Settings)
+    app.json = ProveedorJSON(app)
+    logging.basicConfig(level=logging.INFO)
+
+    CORS(app, origins=Settings.CORS_ORIGINS)
+
+    # ---------- JWT: respuestas de error en JSON y en español ----------
+    jwt = JWTManager(app)
+
+    @jwt.unauthorized_loader
+    def _sin_token(motivo):
+        return jsonify({"error": "Debes iniciar sesión para acceder a este recurso"}), 401
+
+    @jwt.invalid_token_loader
+    def _token_invalido(motivo):
+        return jsonify({"error": "Token inválido"}), 401
+
+    @jwt.expired_token_loader
+    def _token_expirado(encabezado, datos):
+        return jsonify({"error": "Tu sesión expiró. Inicia sesión nuevamente"}), 401
+
+    # ---------- Registro de blueprints ----------
+    for blueprint in (auth_bp, usuario_bp, empresa_bp, cliente_bp, item_bp, cotizacion_bp, dashboard_bp):
+        app.register_blueprint(blueprint)
+
+    @app.route("/salud", methods=["GET"])
+    def salud():
+        """Sirve para comprobar que el servidor está vivo (lo usan los servicios de hosting)."""
+        return jsonify({"estado": "ok"}), 200
+
+    # ---------- Manejo global de errores: la API SIEMPRE responde JSON ----------
+    @app.errorhandler(HTTPException)
+    def _error_http(e):
+        mensaje = MENSAJES_HTTP.get(e.code, e.description)
+        return jsonify({"error": mensaje}), e.code
+
+    @app.errorhandler(mysql.connector.errors.DataError)
+    def _dato_invalido(e):
+        return jsonify({"error": "Algún dato es inválido o excede el tamaño permitido"}), 400
+
+    @app.errorhandler(mysql.connector.errors.IntegrityError)
+    def _integridad(e):
+        return jsonify({"error": "La operación viola una restricción de la base de datos"}), 409
+
+    @app.errorhandler(Exception)
+    def _error_inesperado(e):
+        app.logger.exception("Error inesperado")  # el detalle queda en el log, NO se le muestra al usuario
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+    return app
+
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(debug=Settings.DEBUG, port=5000)
